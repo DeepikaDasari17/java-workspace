@@ -1,0 +1,130 @@
+import java.util.ArrayList;
+import java.util.Scanner;
+
+class Transaction {
+    private String type;
+    private double amount;
+    private String description;
+
+    public Transaction(String type, double amount, String description) {
+        this.type = type;
+        this.amount = amount;
+        this.description = description;
+    }
+
+    @Override
+    public String toString() {
+        return type + ": $" + amount + " - " + description;
+    }
+}
+
+class Account {
+    private double balance;
+    private ArrayList<Transaction> transactionHistory;
+
+    public Account() {
+        balance = 0;
+        transactionHistory = new ArrayList<>();
+    }
+
+    public double getBalance() {
+        return balance;
+    }
+
+    public void deposit(double amount) {
+        balance += amount;
+        transactionHistory.add(new Transaction("Deposit", amount, "Deposit made"));
+    }
+
+    public boolean withdraw(double amount) {
+        if (balance >= amount) {
+            balance -= amount;
+            transactionHistory.add(new Transaction("Withdraw", amount, "Withdrawal made"));
+            return true;
+        }
+        return false;
+    }
+
+    public void transfer(Account receiver, double amount) {
+        if (this.withdraw(amount)) {
+            receiver.deposit(amount);
+            transactionHistory.add(new Transaction("Transfer", amount, "Transfer made to " + receiver));
+        } else {
+            System.out.println("Insufficient balance for transfer.");
+        }
+    }
+
+    public ArrayList<Transaction> getTransactionHistory() {
+        return transactionHistory;
+    }
+}
+
+class ATMInterface {
+    private static Scanner scanner = new Scanner(System.in);
+    private static Account currentAccount;
+
+    public static void main(String[] args) {
+        currentAccount = new Account();
+        showMenu();
+    }
+
+    public static void showMenu() {
+        int choice;
+        do {
+            System.out
+                    .println("\nATM Interface\n1. Deposit\n2. Withdraw\n3. Transfer\n4. Transaction History\n5. Quit");
+            System.out.print("Enter your choice: ");
+            choice = scanner.nextInt();
+            switch (choice) {
+                case 1:
+                    deposit();
+                    break;
+                case 2:
+                    withdraw();
+                    break;
+                case 3:
+                    transfer();
+                    break;
+                case 4:
+                    showTransactionHistory();
+                    break;
+                case 5:
+                    System.out.println("Thank you for using the ATM. Goodbye!");
+                    break;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
+        } while (choice != 5);
+    }
+
+    public static void deposit() {
+        System.out.print("Enter amount to deposit:");
+        double amount = scanner.nextDouble();
+        currentAccount.deposit(amount);
+        System.out.println("Deposit successful. New balance: " + currentAccount.getBalance());
+    }
+
+    public static void withdraw() {
+        System.out.print("Enter amount to withdraw: ");
+        double amount = scanner.nextDouble();
+        if (currentAccount.withdraw(amount))
+            System.out.println("Withdrawal successful. New balance: " + currentAccount.getBalance());
+        else
+            System.out.println("Insufficient funds.");
+    }
+
+    public static void transfer() {
+        System.out.print("Enter amount to transfer: ");
+        double amount = scanner.nextDouble();
+        Account receiver = new Account(); // In real world, this should be selected from existing accounts
+        currentAccount.transfer(receiver, amount);
+    }
+
+    public static void showTransactionHistory() {
+        System.out.println("Transaction History:");
+        ArrayList<Transaction> transactions = currentAccount.getTransactionHistory();
+        for (Transaction transaction : transactions) {
+            System.out.println(transaction);
+        }
+    }
+}
